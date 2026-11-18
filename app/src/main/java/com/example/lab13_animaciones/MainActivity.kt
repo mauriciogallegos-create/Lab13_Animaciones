@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.animateDpAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -37,7 +38,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             Lab13_AnimacionesTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    ColorAnimationScreen(
+                    SizeAndPositionAnimationScreen(
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -47,13 +48,19 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun ColorAnimationScreen(modifier: Modifier = Modifier) {
-    var isBlue by remember { mutableStateOf(true) }
+fun SizeAndPositionAnimationScreen(modifier: Modifier = Modifier) {
+    var isExpanded by remember { mutableStateOf(false) }
 
-    val color by animateColorAsState(
-        targetValue = if (isBlue) Color.Blue else Color.Green,
+    val size by animateDpAsState(
+        targetValue = if (isExpanded) 200.dp else 100.dp,
         animationSpec = tween(durationMillis = 1000),
-        label = "ColorAnimation"
+        label = "SizeAnimation"
+    )
+
+    val offsetX by animateDpAsState(
+        targetValue = if (isExpanded) 100.dp else 0.dp,
+        animationSpec = tween(durationMillis = 1000),
+        label = "OffsetAnimation"
     )
 
     Column(
@@ -63,20 +70,21 @@ fun ColorAnimationScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(onClick = { isBlue = !isBlue }) {
-            Text(text = "Cambiar Color")
+        Button(onClick = { isExpanded = !isExpanded }) {
+            Text(text = "Mover y Redimensionar")
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
         Box(
             modifier = Modifier
-                .size(150.dp)
-                .background(color),
+                .offset(x = offsetX)
+                .size(size)
+                .background(Color.Magenta),
             contentAlignment = Alignment.Center
         ) {
             Text(
-                text = "Cuadro Animado",
+                text = "Cuadro",
                 color = Color.White
             )
         }
@@ -85,9 +93,10 @@ fun ColorAnimationScreen(modifier: Modifier = Modifier) {
 
 @Preview(showBackground = true)
 @Composable
-fun ColorAnimationScreenPreview() {
+fun SizeAndPositionAnimationScreenPreview() {
     Lab13_AnimacionesTheme {
-        ColorAnimationScreen()
+        SizeAndPositionAnimationScreen()
     }
 }
+
 
