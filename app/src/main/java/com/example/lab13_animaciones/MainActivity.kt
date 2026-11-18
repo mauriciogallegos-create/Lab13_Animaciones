@@ -4,11 +4,8 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.slideInVertically
-import androidx.compose.animation.slideOutVertically
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -40,7 +37,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             Lab13_AnimacionesTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    AnimatedVisibilityScreen(
+                    ColorAnimationScreen(
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -50,8 +47,14 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AnimatedVisibilityScreen(modifier: Modifier = Modifier) {
-    var isVisible by remember { mutableStateOf(true) }
+fun ColorAnimationScreen(modifier: Modifier = Modifier) {
+    var isBlue by remember { mutableStateOf(true) }
+
+    val color by animateColorAsState(
+        targetValue = if (isBlue) Color.Blue else Color.Green,
+        animationSpec = tween(durationMillis = 1000),
+        label = "ColorAnimation"
+    )
 
     Column(
         modifier = modifier
@@ -60,36 +63,31 @@ fun AnimatedVisibilityScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(onClick = { isVisible = !isVisible }) {
-            Text(text = if (isVisible) "Ocultar cuadro" else "Mostrar cuadro")
+        Button(onClick = { isBlue = !isBlue }) {
+            Text(text = "Cambiar Color")
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        AnimatedVisibility(
-            visible = isVisible,
-            enter = fadeIn() + slideInVertically(initialOffsetY = { -it }),
-            exit = fadeOut() + slideOutVertically(targetOffsetY = { -it })
+        Box(
+            modifier = Modifier
+                .size(150.dp)
+                .background(color),
+            contentAlignment = Alignment.Center
         ) {
-            Box(
-                modifier = Modifier
-                    .size(150.dp)
-                    .background(Color.Blue),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "Cuadro de Color",
-                    color = Color.White
-                )
-            }
+            Text(
+                text = "Cuadro Animado",
+                color = Color.White
+            )
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun AnimatedVisibilityScreenPreview() {
+fun ColorAnimationScreenPreview() {
     Lab13_AnimacionesTheme {
-        AnimatedVisibilityScreen()
+        ColorAnimationScreen()
     }
 }
+
