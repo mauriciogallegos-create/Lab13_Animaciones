@@ -4,8 +4,11 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.animation.core.animateDpAsState
+import androidx.compose.animation.AnimatedContent
 import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -13,7 +16,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material3.Button
@@ -38,7 +40,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             Lab13_AnimacionesTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    SizeAndPositionAnimationScreen(
+                    AnimatedContentScreen(
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -47,21 +49,13 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+enum class UiState {
+    Loading, Content, Error
+}
+
 @Composable
-fun SizeAndPositionAnimationScreen(modifier: Modifier = Modifier) {
-    var isExpanded by remember { mutableStateOf(false) }
-
-    val size by animateDpAsState(
-        targetValue = if (isExpanded) 200.dp else 100.dp,
-        animationSpec = tween(durationMillis = 1000),
-        label = "SizeAnimation"
-    )
-
-    val offsetX by animateDpAsState(
-        targetValue = if (isExpanded) 100.dp else 0.dp,
-        animationSpec = tween(durationMillis = 1000),
-        label = "OffsetAnimation"
-    )
+fun AnimatedContentScreen(modifier: Modifier = Modifier) {
+    var currentState by remember { mutableStateOf(UiState.Loading) }
 
     Column(
         modifier = modifier
@@ -70,33 +64,57 @@ fun SizeAndPositionAnimationScreen(modifier: Modifier = Modifier) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Button(onClick = { isExpanded = !isExpanded }) {
-            Text(text = "Mover y Redimensionar")
+        Button(onClick = {
+            currentState = when (currentState) {
+                UiState.Loading -> UiState.Content
+                UiState.Content -> UiState.Error
+                UiState.Error -> UiState.Loading
+            }
+        }) {
+            Text(text = "Cambiar Estado")
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        Box(
-            modifier = Modifier
-                .offset(x = offsetX)
-                .size(size)
-                .background(Color.Magenta),
-            contentAlignment = Alignment.Center
-        ) {
-            Text(
-                text = "Cuadro",
-                color = Color.White
-            )
+        AnimatedContent(
+            targetState = currentState,
+            transitionSpec = {
+                fadeIn(animationSpec = tween(500)) togetherWith fadeOut(animationSpec = tween(500))
+            },
+            label = "AnimatedContentTransition"
+        ) { targetState ->
+            Box(
+                modifier = Modifier
+                    .size(200.dp)
+                    .background(
+                        when (targetState) {
+                            UiState.Loading -> Color.Gray
+                            UiState.Content -> Color.Green
+                            UiState.Error -> Color.Red
+                        }
+                    ),
+                contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    text = when (targetState) {
+                        UiState.Loading -> "Cargando..."
+                        UiState.Content -> "¡Contenido Exitoso!"
+                        UiState.Error -> "¡Error en la carga!"
+                    },
+                    color = Color.White
+                )
+            }
         }
     }
 }
 
 @Preview(showBackground = true)
 @Composable
-fun SizeAndPositionAnimationScreenPreview() {
+fun AnimatedContentScreenPreview() {
     Lab13_AnimacionesTheme {
-        SizeAndPositionAnimationScreen()
+        AnimatedContentScreen()
     }
 }
+
 
 
